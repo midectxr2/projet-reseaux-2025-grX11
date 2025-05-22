@@ -4,16 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e9bbd916-2b85-4db6-beaa-986968174d85" name="Changes" comment="c parti 2.0">
-      <change afterPath="$PROJECT_DIR$/src/network/Link.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/network/Packet.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/network/Routeur.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/network/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/topologies/topo1.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/projet-reseaux-2025-grX11.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/projet-reseaux-2025-grX11.iml" afterDir="false" />
+    <list default="true" id="e9bbd916-2b85-4db6-beaa-986968174d85" name="Changes" comment="ajout des classes et du main">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -155,7 +148,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747918862707</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="ajout des classes et du main">
+      <option name="closed" value="true" />
+      <created>1747922416716</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1747922416716</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -172,6 +173,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="c parti" />
     <MESSAGE value="c parti 2.0" />
-    <option name="LAST_COMMIT_MESSAGE" value="c parti 2.0" />
+    <MESSAGE value="ajout des classes et du main" />
+    <option name="LAST_COMMIT_MESSAGE" value="ajout des classes et du main" />
   </component>
 </project>

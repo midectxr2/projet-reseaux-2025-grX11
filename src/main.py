@@ -5,7 +5,15 @@ from network.Routeur import *
 sim = Simulator()
 
 # Charger la topologie depuis un fichier JSON
-routers = load_topology("topologies/topo1.json", sim)
+routers = load_topology("topologies/topo_validation_5r_7l.json", sim)
+
+
+#test pour debug
+'''print("=== Vérification des liens chargés ===")
+for r in routers.values():
+    for nid, link in r.neighbors.items():
+        print(f"Routeur {r.id} - voisin {nid} | coût : {link.cost}")
+'''
 
 # Chaque routeur envoie son vecteur initial
 for r in routers.values():
