@@ -1,25 +1,25 @@
-import json
 from Simulator import Simulator
 from network.Link import Link
 from network.Routeur import Routeur
+import json
 import sys
 
-class NetworkSimulator:
+class Network:
     def __init__(self, json_path):
         self.simulator = Simulator()
         self.routers = {}
         self.links = []
-        self.load_topology(json_path)
+        self.topology(json_path)
 
-    def load_topology(self, json_path):
+    def topology(self, json_path):
         with open(json_path) as f:
             data = json.load(f)
 
         for link in data["links"]:
             r1, r2 = link["endpoints"]
-            for r_id in (r1, r2):
-                if r_id not in self.routers:
-                    self.routers[r_id] = Routeur(r_id, self.simulator)
+            for id in (r1, r2):
+                if id not in self.routers:
+                    self.routers[id] = Routeur(id, self.simulator)
         
             link = Link(
                 r1=self.routers[r1],
@@ -41,6 +41,8 @@ class NetworkSimulator:
                 t = event["time"]
                 r1, r2 = event["link"]
                 new_cost = event["new_cost"]
+                if new_cost >= 999999:
+                    new_cost = float('inf')
                 self.simulator.add_event(t/1000.0, lambda r1=r1, r2=r2, c=new_cost: self.change_link_cost(r1, r2, c))
 
         for router in self.routers.values():
@@ -52,6 +54,7 @@ class NetworkSimulator:
             routers = link.routers
             if {routers[0].id, routers[1].id} == {r1, r2}:
                 link.cost = new_cost
+
                 print(f"@{self.simulator.now():.3f}s Link cost between {r1} and {r2} changed to {new_cost}")
                 routers[0].send_vector()
                 routers[1].send_vector()
@@ -73,5 +76,5 @@ class NetworkSimulator:
 
 
 if __name__ == "__main__":
-    sim = NetworkSimulator(sys.argv[1])
+    sim = Network(sys.argv[1])
     sim.run()

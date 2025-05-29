@@ -41,12 +41,9 @@ class Routeur:
             if dest == self.id:
                 continue
             
-            
-            """if self.routing_table.get(dest) is not None:
-                best_cost = self.routing_table.get(dest)[0]
-                best_next_hop = self.routing_table.get(dest)[1]"""
-            best_cost =float('inf')
+            best_cost=float('inf')
             best_next_hop=None
+            
             if dest in self.neighbors:
                 direct_cost = self.neighbors[dest].cost
                 if direct_cost < best_cost:
