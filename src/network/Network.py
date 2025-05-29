@@ -1,8 +1,8 @@
+import json
 from Simulator import Simulator
 from network.Link import Link
 from network.Routeur import Routeur
-import json
-import sys
+
 
 class Network:
     def __init__(self, json_path):
@@ -43,18 +43,18 @@ class Network:
                 new_cost = event["new_cost"]
                 if new_cost >= 999999:
                     new_cost = float('inf')
-                self.simulator.add_event(t/1000.0, lambda r1=r1, r2=r2, c=new_cost: self.change_link_cost(r1, r2, c))
+                    
+                self.simulator.add_event(t/1000.0, lambda r1=r1, r2=r2, c=new_cost: self.change_cost(r1, r2, c))
 
         for router in self.routers.values():
             self.simulator.add_event(0, router.send_vector)
             break 
 
-    def change_link_cost(self, r1, r2, new_cost):
+    def change_cost(self, r1, r2, new_cost):
         for link in self.links:
             routers = link.routers
             if {routers[0].id, routers[1].id} == {r1, r2}:
                 link.cost = new_cost
-
                 print(f"@{self.simulator.now():.3f}s Link cost between {r1} and {r2} changed to {new_cost}")
                 routers[0].send_vector()
                 routers[1].send_vector()
@@ -63,9 +63,9 @@ class Network:
 
     def run(self):
         self.simulator.run()
-        self.display_routing_tables()
+        self.print_tables()
 
-    def display_routing_tables(self):
+    def print_tables(self):
         for router_id in sorted(self.routers):
             router = self.routers[router_id]
             print(f"-- Router {router.id} :")
@@ -74,7 +74,3 @@ class Network:
                 print(f"{dest_id}\t{cost}\t{next_hop}")
             print()
 
-
-if __name__ == "__main__":
-    sim = Network(sys.argv[1])
-    sim.run()
