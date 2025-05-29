@@ -19,6 +19,7 @@ class Link:
 
     def deliver(self, dst, id ,packet):
         dst.receive_vector(id, packet.vector)
+
         
 
 
