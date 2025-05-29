@@ -49,12 +49,12 @@ class NetworkSimulator:
 
     def change_link_cost(self, r1, r2, new_cost):
         for link in self.links:
-            r_objs = link.routers
-            if {r_objs[0].id, r_objs[1].id} == {r1, r2}:
+            routers = link.routers
+            if {routers[0].id, routers[1].id} == {r1, r2}:
                 link.cost = new_cost
                 print(f"@{self.simulator.now():.3f}s Link cost between {r1} and {r2} changed to {new_cost}")
-                r_objs[0].notify_link_cost_change(r_objs[1].id, new_cost)
-                r_objs[1].notify_link_cost_change(r_objs[0].id, new_cost)
+                routers[0].send_vector()
+                routers[1].send_vector()
                 break
 
 

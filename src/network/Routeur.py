@@ -76,22 +76,3 @@ class Routeur:
         for dest, (cost, next_hop) in self.routing_table.items():
             print(f"  {dest} via {next_hop} cost {cost}")
     
-    def notify_link_cost_change(self, neighbor_id, new_cost):
-        if neighbor_id in self.routing_table:
-            self.routing_table[neighbor_id] = (new_cost, neighbor_id)
-            self.vector[neighbor_id] = new_cost
-
-        updated = False
-        for dest, (cost, next_hop) in list(self.routing_table.items()):
-            if next_hop == neighbor_id:
-                # recalcul potentiel
-                alt_cost = self.neighbors[neighbor_id].cost + self.vector.get(dest, float('inf'))
-                if alt_cost != cost:
-                    self.routing_table[dest] = (alt_cost, neighbor_id)
-                    self.vector[dest] = alt_cost
-                    updated = True
-
-        if updated:
-            self.log_update()
-            self.send_vector()
-

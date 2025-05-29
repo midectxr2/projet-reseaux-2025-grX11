@@ -27,7 +27,7 @@
       "type": "cost_change",
       "time": 10,
       "link": [1,2],
-      "new_cost": 10
+      "new_cost": 60
     }
   ]
 }
