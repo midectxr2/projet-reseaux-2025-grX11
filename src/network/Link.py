@@ -1,14 +1,23 @@
 class Link:
-    def __init__(self, router1, router2, propagation_speed, transmission_speed, distance, cost):
-        self.router1 = router1
-        self.router2 = router2
-        self.propagation_speed = propagation_speed
-        self.transmission_speed = transmission_speed
+    def __init__(self, r1, r2, distance, prop_speed, trans_speed, cost, simulator):
+        self.routers = (r1, r2) 
         self.distance = distance
+        self.prop_speed = prop_speed
+        self.trans_speed = trans_speed
         self.cost = cost
+        self.simulator = simulator
 
-    def delay(self, packet_size_bits):
-        return self.distance / self.propagation_speed + packet_size_bits / self.transmission_speed
+    def transmit(self, packet, from_router_id):
+        if self.router_objs[0].id == from_router_id:
+            to_router = self.router_objs[1]
+        else:
+            to_router = self.router_objs[0]
 
-    def other_end(self, router_id):
-        return self.router2 if router_id == self.router1 else self.router1
+        message_size_bits = packet.size_bits()
+        delay = self.distance / self.prop_speed + message_size_bits / self.trans_speed
+
+        def deliver():
+            to_router.receive_vector(from_router_id, packet.vector)
+
+        self.simulator.add_event(delay, deliver)
+                    

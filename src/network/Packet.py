@@ -1,7 +1,8 @@
 class Packet:
-    def __init__(self, sender_id, vector):
-        self.sender_id = sender_id
-        self.vector = vector  # {destination: cost}
+    def __init__(self, src, dst, vector):
+        self.src = src
+        self.dst = dst
+        self.vector = vector  # dict {dest: cost}
 
     def size_bits(self):
-        return len(self.vector) * 32  # exemple : 32 bits par entrée
+        return len(self.vector) * 32  # suppose 32 bits (4 octets) par entrée

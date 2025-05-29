@@ -5,7 +5,7 @@ from network.Routeur import *
 sim = Simulator()
 
 # Charger la topologie depuis un fichier JSON
-routers = load_topology("topologies/topo_validation_5r_7l.json", sim)
+routers = load_topology("topologies/topo1.json", sim)
 
 
 #test pour debug
@@ -22,10 +22,12 @@ for r in routers.values():
 # Lancer la simulation
 sim.run()
 
+# (Optionnel) Afficher les logs de chaque routeur
+for r in sorted(routers.values(), key=lambda x: x.id):
+    r.show_log()
+
+
 # Afficher les tables de routage finales
 for r in sorted(routers.values(), key=lambda x: x.id):
     r.display_routing_table()
 
-# (Optionnel) Afficher les logs de chaque routeur
-for r in sorted(routers.values(), key=lambda x: x.id):
-    r.show_log()

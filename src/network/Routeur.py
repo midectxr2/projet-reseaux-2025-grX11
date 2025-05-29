@@ -1,96 +1,93 @@
-import json
-from src.network.Packet import *
-from src.network.Link import *
-
-class Router:
+from network.Packet import Packet
+class Routeur:
     def __init__(self, router_id, simulator):
         self.id = router_id
         self.simulator = simulator
-        self.neighbors = {}  # neighbor_id -> Link
-        self.routing_table = {self.id: (0, self.id)}  # destination -> (cost, next_hop)
-        self.log = []
+        self.neighbors = {}
+        self.routing_table = {}
+        self.distance_vector = {}
+        self.sent_vectors = {}
+        self.received_vectors= {}
+    
+    def add_link(self, neighbor, link):
+        self.neighbors[neighbor.id] = link
+        self.routing_table[neighbor.id] = (link.cost, neighbor.id)
+        self.distance_vector[neighbor.id] = link.cost
 
-    def add_neighbor(self, neighbor_id, link):
-        self.neighbors[neighbor_id] = link
-
-    def send_vector(self):
-        vector = {dest: cost for dest, (cost, _) in self.routing_table.items()}
-        self.log.append(f"[{self.simulator.now()}] Router {self.id} sends vector: {vector}")
+    def send_distance_vector(self):
         for neighbor_id, link in self.neighbors.items():
-            packet = Packet(self.id, vector)
-            delay = link.delay(packet.size_bits())
-            self.simulator.add_event(delay, lambda rid=neighbor_id, pkt=packet:
-                                     self.simulator.routers[rid].receive_vector(pkt))
+            vector = self.distance_vector.copy()
 
-    def receive_vector(self, packet):
-        updated = False
-        log_entries = []
-        cost_to_sender = self.neighbors[packet.sender_id].cost
-        log_entries.append(f"[{self.simulator.now()}] Router {self.id} receives vector from {packet.sender_id}: {packet.vector}")
-        for dest, cost in packet.vector.items():
+            if self.last_sent_vectors.get(neighbor_id) != vector:
+                packet = Packet(self.id, neighbor_id, vector)
+                link.transmit(packet, from_router_id=self.id)
+                self.last_sent_vectors[neighbor_id] = vector.copy()
+
+
+    def receive_vector(self, from_id, vector):
+        self.received_vectors[from_id] = vector
+
+        all_dests = set(self.distance_vector.keys())
+        for vec in self.received_vectors.values():
+            all_dests.update(vec.keys())
+
+        new_routing_table = {}
+        new_distance_vector = {}
+
+        for dest in all_dests:
             if dest == self.id:
-                continue  # skip route to self
-            new_cost = cost + cost_to_sender
-            if (dest not in self.routing_table) or (new_cost < self.routing_table[dest][0]):
-                old = self.routing_table.get(dest, None)
-                self.routing_table[dest] = (new_cost, packet.sender_id)
-                updated = True
-                if old:
-                    reason = f"(updated: old cost {old[0]} via {old[1]})"
-                else:
-                    reason = "(new route)"
-                log_entries.append(f"  -> route to {dest} updated: cost={new_cost}, next_hop={packet.sender_id} {reason}")
+                continue
 
-        self.log.extend(log_entries)
+            if dest in self.neighbors:
+                direct_cost = self.neighbors[dest].cost
+                if direct_cost < best_cost:
+                    best_cost = direct_cost
+                    best_next_hop = dest
+
+            for neighbor_id, link in self.neighbors.items():
+                neighbor_vector = self.received_vectors.get(neighbor_id, {})
+                if dest in neighbor_vector:
+                    cost_via_neighbor = link.cost + neighbor_vector[dest]
+                    if cost_via_neighbor < best_cost:
+                        best_cost = cost_via_neighbor
+                        best_next_hop = neighbor_id
+
+            if best_next_hop is not None:
+                new_routing_table[dest] = (best_cost, best_next_hop)
+                new_distance_vector[dest] = best_cost
+
+        
+        self.routing_table = new_routing_table
+        self.distance_vector = new_distance_vector
+            
+        self.send_distance_vector()
+        self.log_update()
+
+
+
+
+    def log_update(self):
+        print(f"@{self.simulator.now():.3f}s Router {self.id} updated its routing table:")
+        for dest, (cost, next_hop) in self.routing_table.items():
+            print(f"  {dest} via {next_hop} cost {cost}")
+    
+    def notify_link_cost_change(self, neighbor_id, new_cost):
+    # Met à jour le coût direct vers le voisin
+        if neighbor_id in self.routing_table:
+            self.routing_table[neighbor_id] = (new_cost, neighbor_id)
+            self.distance_vector[neighbor_id] = new_cost
+
+        updated = False
+        for dest, (cost, next_hop) in list(self.routing_table.items()):
+            if next_hop == neighbor_id:
+                # recalcul potentiel
+                alt_cost = self.neighbors[neighbor_id].cost + self.distance_vector.get(dest, float('inf'))
+                if alt_cost != cost:
+                    self.routing_table[dest] = (alt_cost, neighbor_id)
+                    self.distance_vector[dest] = alt_cost
+                    updated = True
+
         if updated:
-            self.send_vector()
+            self.log_update()
+            self.send_distance_vector()
 
-    def display_routing_table(self):
-        print(f"-- Router {self.id} :")
-        print("dest cost next-hop")
-        for dest, (cost, next_hop) in sorted(self.routing_table.items()):
-            print(f"{dest} {cost} {next_hop}")
-        print()
-
-    def show_log(self):
-        for entry in self.log:
-            print(entry)
-
-def load_topology(json_path, simulator):
-    with open(json_path, "r") as f:
-        data = json.load(f)
-
-    routers = {}
-    links = []
-
-    for link in data["links"]:
-        r1, r2 = link["endpoints"]
-        for r in (r1, r2):
-            if r not in routers:
-                routers[r] = Router(r, simulator)
-        l = Link(r1, r2,
-                 link["propagation_speed"],
-                 link["transmission_speed"],
-                 link["distance"],
-                 link["cost"])
-        links.append(l)
-        routers[r1].add_neighbor(r2, l)
-        routers[r2].add_neighbor(r1, l)
-
-    simulator.routers = routers
-
-    if "events" in data:
-        for event in data["events"]:
-            if event["type"] == "cost_change":
-                time_ms = event["time"]
-                a, b = event["link"]
-                new_cost = event["new_cost"]
-                def change_cost():
-                    for l in links:
-                        if {l.router1, l.router2} == {a, b}:
-                            l.cost = new_cost
-                            print(f"[{simulator.now()}] Link cost between {a}-{b} changed to {new_cost}")
-                            break
-                simulator.add_event(time_ms / 1000, change_cost)
-
-    return routers
