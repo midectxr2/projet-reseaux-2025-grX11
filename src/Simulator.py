@@ -32,7 +32,6 @@ class Simulator:  # REM: Ajouter des logs DEBUG pourraient être utile
         """
         assert delta_t >= 0
         self.q.put(SimulatorEvent(self.__now + delta_t, event))
-
     def run(self):
         while self.q.qsize() > 0:
             e = self.q.get()

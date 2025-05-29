@@ -5,39 +5,48 @@ class Routeur:
         self.simulator = simulator
         self.neighbors = {}
         self.routing_table = {}
-        self.distance_vector = {}
+        self.vector = {}
         self.sent_vectors = {}
         self.received_vectors= {}
     
     def add_link(self, neighbor, link):
         self.neighbors[neighbor.id] = link
         self.routing_table[neighbor.id] = (link.cost, neighbor.id)
-        self.distance_vector[neighbor.id] = link.cost
+        self.vector[neighbor.id] = link.cost
+        self.log_update()
 
-    def send_distance_vector(self):
+    def send_vector(self):
         for neighbor_id, link in self.neighbors.items():
-            vector = self.distance_vector.copy()
+            vector = self.vector.copy()
 
-            if self.last_sent_vectors.get(neighbor_id) != vector:
+            if self.sent_vectors.get(neighbor_id) != vector:
                 packet = Packet(self.id, neighbor_id, vector)
-                link.transmit(packet, from_router_id=self.id)
-                self.last_sent_vectors[neighbor_id] = vector.copy()
+                link.transmit(packet,self.id)
+                self.sent_vectors[neighbor_id] = vector.copy()
 
 
-    def receive_vector(self, from_id, vector):
-        self.received_vectors[from_id] = vector
+    def receive_vector(self, id, vector):
+        self.received_vectors[id] = vector
 
-        all_dests = set(self.distance_vector.keys())
+        dests = set(self.vector.keys())
+
         for vec in self.received_vectors.values():
-            all_dests.update(vec.keys())
+            dests.update(vec.keys())
 
         new_routing_table = {}
-        new_distance_vector = {}
+        new_vector = {}
 
-        for dest in all_dests:
+
+        for dest in dests:
             if dest == self.id:
                 continue
-
+            
+            
+            """if self.routing_table.get(dest) is not None:
+                best_cost = self.routing_table.get(dest)[0]
+                best_next_hop = self.routing_table.get(dest)[1]"""
+            best_cost =float('inf')
+            best_next_hop=None
             if dest in self.neighbors:
                 direct_cost = self.neighbors[dest].cost
                 if direct_cost < best_cost:
@@ -54,40 +63,35 @@ class Routeur:
 
             if best_next_hop is not None:
                 new_routing_table[dest] = (best_cost, best_next_hop)
-                new_distance_vector[dest] = best_cost
+                new_vector[dest] = best_cost
 
+        if new_vector != self.vector:
+            self.routing_table = new_routing_table
+            self.vector = new_vector
+            self.log_update()
+            self.send_vector()
         
-        self.routing_table = new_routing_table
-        self.distance_vector = new_distance_vector
-            
-        self.send_distance_vector()
-        self.log_update()
-
-
-
-
     def log_update(self):
         print(f"@{self.simulator.now():.3f}s Router {self.id} updated its routing table:")
         for dest, (cost, next_hop) in self.routing_table.items():
             print(f"  {dest} via {next_hop} cost {cost}")
     
     def notify_link_cost_change(self, neighbor_id, new_cost):
-    # Met à jour le coût direct vers le voisin
         if neighbor_id in self.routing_table:
             self.routing_table[neighbor_id] = (new_cost, neighbor_id)
-            self.distance_vector[neighbor_id] = new_cost
+            self.vector[neighbor_id] = new_cost
 
         updated = False
         for dest, (cost, next_hop) in list(self.routing_table.items()):
             if next_hop == neighbor_id:
                 # recalcul potentiel
-                alt_cost = self.neighbors[neighbor_id].cost + self.distance_vector.get(dest, float('inf'))
+                alt_cost = self.neighbors[neighbor_id].cost + self.vector.get(dest, float('inf'))
                 if alt_cost != cost:
                     self.routing_table[dest] = (alt_cost, neighbor_id)
-                    self.distance_vector[dest] = alt_cost
+                    self.vector[dest] = alt_cost
                     updated = True
 
         if updated:
             self.log_update()
-            self.send_distance_vector()
+            self.send_vector()
 
