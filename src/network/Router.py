@@ -1,5 +1,5 @@
 from network.Packet import Packet
-class Routeur:
+class Router:
     def __init__(self, router_id, simulator):
         self.id = router_id
         self.simulator = simulator
