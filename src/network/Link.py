@@ -15,10 +15,8 @@ class Link:
 
         message_size = packet.size()
         delay = self.distance / self.p_speed + message_size / self.t_speed
-        self.simulator.add_event(delay, lambda dst=dst, id=id, packet=packet :self.deliver(dst, id, packet))
+        self.simulator.add_event(delay, lambda dst=dst, id=id, packet=packet :dst.receive(id, packet.vector))
 
-    def deliver(self, dst, id ,packet):
-        dst.receive(id, packet.vector)
 
         
 
