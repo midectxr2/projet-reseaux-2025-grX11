@@ -15,7 +15,7 @@ class Routeur:
         self.vector[neighbor.id] = link.cost
         self.log_update()
 
-    def send_vector(self):
+    def send(self):
         for neighbor_id, link in self.neighbors.items():
             vector = self.vector.copy()
 
@@ -25,7 +25,7 @@ class Routeur:
                 self.sent_vectors[neighbor_id] = vector.copy()
 
 
-    def receive_vector(self, id, vector):
+    def receive(self, id, vector):
         self.received_vectors[id] = vector
 
         dests = set(self.vector.keys())
@@ -40,10 +40,10 @@ class Routeur:
         for dest in dests:
             if dest == self.id:
                 continue
-            
-            best_cost=float('inf')
+        
+            best_cost =float('inf')
             best_next_hop=None
-            
+
             if dest in self.neighbors:
                 direct_cost = self.neighbors[dest].cost
                 if direct_cost < best_cost:
@@ -66,10 +66,11 @@ class Routeur:
             self.routing_table = new_routing_table
             self.vector = new_vector
             self.log_update()
-            self.send_vector()
+            self.send()
         
     def log_update(self):
         print(f"@{self.simulator.now():.3f}s Router {self.id} updated its routing table:")
         for dest, (cost, next_hop) in self.routing_table.items():
             print(f"  {dest} via {next_hop} cost {cost}")
     
+

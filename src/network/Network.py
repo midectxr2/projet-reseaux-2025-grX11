@@ -47,8 +47,8 @@ class Network:
                 self.simulator.add_event(t/1000.0, lambda r1=r1, r2=r2, c=new_cost: self.change_cost(r1, r2, c))
 
         for router in self.routers.values():
-            self.simulator.add_event(0, router.send_vector)
-            break 
+            self.simulator.add_event(0, router.send)
+             
 
     def change_cost(self, r1, r2, new_cost):
         for link in self.links:
@@ -56,14 +56,10 @@ class Network:
             if {routers[0].id, routers[1].id} == {r1, r2}:
                 link.cost = new_cost
                 print(f"@{self.simulator.now():.3f}s Link cost between {r1} and {r2} changed to {new_cost}")
-                routers[0].send_vector()
-                routers[1].send_vector()
+                routers[0].send()
+                routers[1].send()
                 break
 
-
-    def run(self):
-        self.simulator.run()
-        self.print_tables()
 
     def print_tables(self):
         for router_id in sorted(self.routers):
@@ -73,4 +69,8 @@ class Network:
             for dest_id, (cost, next_hop) in sorted(router.routing_table.items()):
                 print(f"{dest_id}\t{cost}\t{next_hop}")
             print()
+
+    def run(self):
+        self.simulator.run()
+        self.print_tables()
 

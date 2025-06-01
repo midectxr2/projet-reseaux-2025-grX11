@@ -50,12 +50,5 @@
       "endpoints": [4,5]
     }
   ],
-  "events": [ 
-      {
-        "type": "cost_change",
-        "time": 1000,
-        "link": [1, 2], 
-        "new_cost": 50
-      }
-    ]
+  "events": []
 }

@@ -4,5 +4,5 @@ class Packet:
         self.dst = dst
         self.vector = vector
 
-    def size_bits(self):
+    def size(self):
         return len(self.vector) * 32 
