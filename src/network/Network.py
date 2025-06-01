@@ -1,7 +1,7 @@
 import json
 from Simulator import Simulator
 from network.Link import Link
-from network.Routeur import Routeur
+from network.Router import Router
 
 
 class Network:
@@ -19,7 +19,7 @@ class Network:
             r1, r2 = link["endpoints"]
             for id in (r1, r2):
                 if id not in self.routers:
-                    self.routers[id] = Routeur(id, self.simulator)
+                    self.routers[id] = Router(id, self.simulator)
         
             link = Link(
                 r1=self.routers[r1],
